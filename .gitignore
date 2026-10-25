@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+*.log
 
 # Third-party SearXNG checkout with local settings (server.secret_key) and a
 # Windows-specific patch -- build it from scratch per the README, never commit it.

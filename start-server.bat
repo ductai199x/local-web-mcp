@@ -1,7 +1,14 @@
 @echo off
-rem FastMCP web server on 127.0.0.1:9000 (SearXNG + Crawl4AI + pymupdf4llm + arXiv)
+rem FastMCP web server on 127.0.0.1:9000 (SearXNG + Crawl4AI + Scrapling + arXiv/alphaxiv)
 cd /d %~dp0
-where uv >nul 2>nul || set "uv=C:\Users\Tai\.local\bin\uv.exe"
+rem Always define %uv%: default to the full path, prefer the bare command if
+rem uv is on the PATH (an unset var expands to nothing and breaks the call).
+set "uv=C:\Users\Tai\.local\bin\uv.exe"
+where uv >nul 2>nul && set "uv=uv"
 rem Windows console is cp1252 by default; force UTF-8 so tool logs don't crash on non-ASCII
 set PYTHONIOENCODING=utf-8
+rem This launcher runs the SHARED HTTP server (registered as "local-web-shared").
+rem The default stdio mode (registered as "local-web") is spawned by Claude
+rem Code itself per session and needs no launcher.
+set MCP_TRANSPORT=http
 %uv% run python server.py

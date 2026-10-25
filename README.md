@@ -60,15 +60,32 @@ Everything is managed with **uv**. The MCP project (this folder) is a uv project
   paginated the same way. For arXiv paper PDFs the default route is alphaxiv's
   extracted text; the direct download happens only when alphaxiv lacks the paper.
 
-## Run
+## Run / registration (two modes)
+
+| Name | Transport | Lifecycle |
+|---|---|---|
+| `local-web` | **stdio — the default** | Claude Code spawns `uv run python server.py` per session (like the chrome-devtools plugin). Nothing to start, nothing to keep alive. |
+| `local-web-shared` | HTTP :9000 | One long-lived server shared by all sessions (shared rate-limit gate + browser pool). Auto-starts at logon (scheduled task `local-web-mcp-stack` → `autostart.vbs`) and self-heals at every session start (SessionStart hook → `check-and-start.bat`). |
+
+Both modes also use SearXNG on :8888 for `web_search`/`scholar_search`
+(`web_search` falls back to DuckDuckGo if SearXNG is down). `check-and-start.bat`
+is idempotent: it starts only whatever port is not listening.
+
+Manual launch (visible windows): `start-all.bat` / `./start-all.sh`, or
+individually `start-searxng.*` / `start-server.*` (the server launchers set
+`MCP_TRANSPORT=http`).
+
+Re-register from scratch (both at user scope):
 
 ```
-start-all.bat          # Windows: SearXNG + MCP server, each in its own console window
-./start-all.sh         # Linux/macOS: same, backgrounded in one terminal
+claude mcp add -s user local-web -- <path to uv> run --directory <this folder> python server.py
+claude mcp add -s user local-web-shared --transport http http://127.0.0.1:9000/mcp
+claude mcp list        # both should show Connected
 ```
 
-or individually: `start-searxng.bat` / `start-server.bat` (Windows),
-`./start-searxng.sh` / `./start-server.sh` (Linux/macOS).
+Note: with both registered, a session sees the 11 tools twice (once per
+server prefix). Use `local-web` (stdio) for everyday work; the shared one is
+for running several sessions/agents concurrently against one browser pool.
 
 ## Tests
 
@@ -79,17 +96,9 @@ uv run python smoke_test.py            # live end-to-end, all 11 tools
 SKIP_ARXIV=1 uv run python smoke_test.py   # skip arXiv while it's rate-limiting
 ```
 
-Unit tests run in CI (`.github/workflows/ci.yml`); the smoke test needs both
-servers running, so it's local-only.
-
-## Register with Claude Code
-
-```
-claude mcp add --transport http local-web http://127.0.0.1:9000/mcp
-claude mcp list        # verify (both servers must be running)
-```
-
-Then `/mcp` in a session shows the four tools.
+Unit tests run in CI (`.github/workflows/ci.yml`); the smoke test hits the
+live HTTP server (start it with `check-and-start.bat` or `start-all.bat`),
+so it's local-only.
 
 ## (Re)setup from scratch
 

@@ -650,4 +650,14 @@ async def _alphaxiv_fulltext_core(pid: str, offset: int, max_chars: int) -> dict
 
 
 if __name__ == "__main__":
-    mcp.run(transport="http", host="127.0.0.1", port=9000)
+    if os.getenv("MCP_TRANSPORT", "stdio") == "http":
+        # Shared-service mode: one long-lived server for all sessions (shared
+        # rate-limit gate + browser pool). Needs something to keep it running
+        # (start-server.bat / the scheduled task).
+        mcp.run(transport="http", host="127.0.0.1", port=9000)
+    else:
+        # Default: stdio, exactly like the chrome-devtools plugin -- Claude Code
+        # spawns this process per session, so nothing needs to be pre-started.
+        # NOTE: stdout is the MCP channel; keep all prints off it (banners are
+        # suppressed via .env: CRAWL4AI_NO_CLOUD_NOTICE=1).
+        mcp.run()
