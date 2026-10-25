@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync
+      - name: Run unit tests
+        # Pure-logic tests only (no network, no real-time waits; the domain
+        # gate runs against an injected fake clock). The live smoke_test.py
+        # needs SearXNG + browsers and is run locally, not in CI.
+        run: uv run pytest

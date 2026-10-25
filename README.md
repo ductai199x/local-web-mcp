@@ -63,10 +63,24 @@ Everything is managed with **uv**. The MCP project (this folder) is a uv project
 ## Run
 
 ```
-start-all.bat          # SearXNG + MCP server, each in its own console window
+start-all.bat          # Windows: SearXNG + MCP server, each in its own console window
+./start-all.sh         # Linux/macOS: same, backgrounded in one terminal
 ```
 
-or individually: `start-searxng.bat`, `start-server.bat`.
+or individually: `start-searxng.bat` / `start-server.bat` (Windows),
+`./start-searxng.sh` / `./start-server.sh` (Linux/macOS).
+
+## Tests
+
+```
+uv run pytest                          # unit tests: pure helpers + domain gate
+                                       # (fake clock, no network, ~1s)
+uv run python smoke_test.py            # live end-to-end, all 11 tools
+SKIP_ARXIV=1 uv run python smoke_test.py   # skip arXiv while it's rate-limiting
+```
+
+Unit tests run in CI (`.github/workflows/ci.yml`); the smoke test needs both
+servers running, so it's local-only.
 
 ## Register with Claude Code
 

@@ -1,7 +1,7 @@
 [project]
 name = "local-web-mcp"
 version = "0.1.0"
-description = "Add your description here"
+description = "Local web search / fetch MCP server for Claude Code (SearXNG, Crawl4AI, Scrapling, arXiv/alphaxiv)"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -19,3 +19,10 @@ dependencies = [
 dev = [
     "pytest>=9.1.1",
 ]
+
+[tool.pytest.ini_options]
+# Collect only test_server.py: walking from the project root would make pytest
+# scan the searxng/ checkout (including its own venv) on every run, which costs
+# ~15s on Windows.
+testpaths = ["test_server.py"]
+addopts = "-q"

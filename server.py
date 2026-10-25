@@ -91,6 +91,8 @@ _domain_sems: dict[str, asyncio.Semaphore] = {}
 _domain_last: dict[str, float] = {}
 _domain_paused_until: dict[str, float] = {}
 _domains_guard = asyncio.Lock()
+# Indirection so tests can inject a fake clock (see test_server.py).
+_now = time.monotonic
 
 
 def _domain_of(url: str) -> str:
@@ -115,16 +117,16 @@ async def _gate(domain: str):
     async with _domains_guard:
         sem = _domain_sems.setdefault(domain, asyncio.Semaphore(1))
     async with sem:
-        paused = _domain_paused_until.get(domain, 0.0) - time.monotonic()
+        paused = _domain_paused_until.get(domain, 0.0) - _now()
         if paused > GATE_WAIT_CAP:
             raise _DomainPaused(f"domain {domain} is paused after rate limiting "
                                 f"(~{int(paused)}s remaining); wait, then retry")
         if paused > 0:
             await asyncio.sleep(paused)
-        gap = _domain_last.get(domain, 0.0) + DOMAIN_GAPS.get(domain, DEFAULT_DOMAIN_GAP) - time.monotonic()
+        gap = _domain_last.get(domain, 0.0) + DOMAIN_GAPS.get(domain, DEFAULT_DOMAIN_GAP) - _now()
         if gap > 0:
             await asyncio.sleep(gap)
-        _domain_last[domain] = time.monotonic()
+        _domain_last[domain] = _now()
         yield
 
 
@@ -140,7 +142,7 @@ async def _pause(domain: str, r: httpx.Response | None = None, seconds: float | 
     if seconds is None:
         seconds = DOMAIN_COOLDOWNS.get(domain, DEFAULT_COOLDOWN)
     async with _domains_guard:
-        _domain_paused_until[domain] = time.monotonic() + seconds
+        _domain_paused_until[domain] = _now() + seconds
     return seconds
 
 
