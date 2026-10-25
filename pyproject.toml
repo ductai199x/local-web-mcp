@@ -1,0 +1,21 @@
+[project]
+name = "local-web-mcp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "crawl4ai>=0.9.5",
+    "ddgs>=9.16.1",
+    "fastmcp>=4.1.3",
+    "httpx>=0.28.1",
+    "markdownify>=1.2.3",
+    "pymupdf>=2.0",
+    "scrapling[fetchers]>=0.5",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
