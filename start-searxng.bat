@@ -9,4 +9,7 @@ rem Always define %uv% (see start-server.bat); unset vars expand to nothing.
 set "uv=C:\Users\Tai\.local\bin\uv.exe"
 where uv >nul 2>nul && set "uv=uv"
 set PYTHONIOENCODING=utf-8
-%uv% run --no-project --python .venv python -m searx.webapp
+if not exist "%~dp0logs" mkdir "%~dp0logs"
+rem Rotate: if the log exceeds 5 MB, keep one prior generation as .1
+for %%F in ("%~dp0logs\searxng.log") do if %%~zF GTR 5242880 move /y "%%F" "%~dp0logs\searxng.log.1" >nul 2>&1
+%uv% run --no-project --python .venv python -m searx.webapp >> "%~dp0logs\searxng.log" 2>&1

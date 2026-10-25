@@ -11,4 +11,7 @@ rem This launcher runs the SHARED HTTP server (registered as "local-web-shared")
 rem The default stdio mode (registered as "local-web") is spawned by Claude
 rem Code itself per session and needs no launcher.
 set MCP_TRANSPORT=http
-%uv% run python server.py
+if not exist "%~dp0logs" mkdir "%~dp0logs"
+rem Rotate: if the log exceeds 5 MB, keep one prior generation as .1
+for %%F in ("%~dp0logs\mcp.log") do if %%~zF GTR 5242880 move /y "%%F" "%~dp0logs\mcp.log.1" >nul 2>&1
+%uv% run python server.py >> "%~dp0logs\mcp.log" 2>&1

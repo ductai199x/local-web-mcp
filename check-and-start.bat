@@ -6,8 +6,9 @@ rem     Claude Code as "local-web-shared")
 rem The stdio registration ("local-web") needs no launching: Claude Code
 rem spawns its own server per session.
 rem Safe to run at logon (scheduled task), from the SessionStart hook, or
-rem manually. The start /MIN windows survive this process exiting.
+rem manually. The hidden background processes survive this process exiting,
+rem and each server writes its log to logs\ (searxng.log, mcp.log).
 setlocal
-netstat -ano | findstr ":8888" | findstr "LISTENING" >nul 2>&1 || start "local-web: searxng" /MIN cmd /c ""%~dp0start-searxng.bat""
-netstat -ano | findstr ":9000" | findstr "LISTENING" >nul 2>&1 || start "local-web: mcp (shared)" /MIN cmd /c ""%~dp0start-server.bat""
+netstat -ano | findstr ":8888" | findstr "LISTENING" >nul 2>&1 || wscript //nologo "%~dp0run-hidden.vbs" "%~dp0start-searxng.bat"
+netstat -ano | findstr ":9000" | findstr "LISTENING" >nul 2>&1 || wscript //nologo "%~dp0run-hidden.vbs" "%~dp0start-server.bat"
 exit /b 0
